@@ -315,6 +315,23 @@ function renderPanel3(d) {
     </div>`;
 }
 
+function renderPanelLive(d) {
+  const posts = d.live_posts || [];
+  if (!posts.length) return '';
+  return `
+    <div class="panel full-width">
+      <h3><span class="dot" style="background:${PANEL_COLORS[d.key]}"></span>大V实时观点 · Latest Posts</h3>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:8px;">最新3条财经原创微博（已过滤非投资内容）</div>
+      ${posts.map(p => `
+        <div class="rel-row" style="padding:5px 0;">
+          <span style="font-size:10px;color:var(--sub);min-width:55px;flex-shrink:0;">${p.time}</span>
+          <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.04);min-width:40px;text-align:center;flex-shrink:0;margin-right:6px;">${p.tag||''}</span>
+          <span style="font-size:12px;flex:1;line-height:1.4;">${p.text}</span>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
 function renderPanel5(d) {
   const recs = d.recommendations || [];
   return `
@@ -370,6 +387,7 @@ function renderBloggerPanel(key, d) {
     <div id="panel-${key}" class="blogger-panel">
       <div class="panels-grid">
         ${renderPanel5(Object.assign({},d,{key}))}
+        ${renderPanelLive(Object.assign({},d,{key}))}
         ${renderPanel1(Object.assign({},d,{key}))}
         ${renderPanel2(Object.assign({},d,{key}))}
         ${renderPanel3(Object.assign({},d,{key}))}
