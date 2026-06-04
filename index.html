@@ -251,12 +251,12 @@ function renderPortfolio(portfolio) {
       const cls = down ? 'pf-pnl-down' : 'pf-pnl-up';
       const id = 'pfg_' + i;
       return `
-      <div class="pf-row pf-cat" style="font-weight:600;cursor:pointer;" data-target="${id}">
-        <span class="pf-name">▸ ${g.cat.name}</span>
+      <div class="pf-row pf-cat" style="font-weight:600;cursor:pointer;" onclick="t('${id}',this)">
+        <span class="pf-name pf-arrow">▾ ${g.cat.name}</span>
         <span style="font-size:11px;min-width:50px;text-align:right;">${g.cat.amount||'--'}</span>
         <span class="pf-pnl ${cls}" style="min-width:50px;text-align:right;">${g.cat.pnl||'--'}</span>
       </div>
-      <div id="${id}" class="pf-hidden" style="display:block;">
+      <div id="${id}" style="display:block;">
         ${g.subs.map(s => {
           const sd = (s.pnl||'').startsWith('-');
           const scls = sd ? 'pf-pnl-down' : 'pf-pnl-up';
@@ -567,19 +567,14 @@ function loadSample() {
   renderAll(sample);
 }
 
-document.addEventListener('click', function(e) {
-  const cat = e.target.closest('.pf-cat');
-  if (!cat) return;
-  const targetId = cat.dataset.target;
-  const sub = document.getElementById(targetId);
+function t(id, el) {
+  const sub = document.getElementById(id);
   if (!sub) return;
-  sub.classList.toggle('pf-hidden');
-  const arrow = cat.querySelector('.pf-name');
-  if (arrow) {
-    const name = arrow.textContent.replace(/^[▸▾] /, '');
-    arrow.textContent = (sub.classList.contains('pf-hidden') ? '▸ ' : '▾ ') + name;
-  }
-});
+  const hidden = sub.style.display === 'none';
+  sub.style.display = hidden ? 'block' : 'none';
+  const arrow = el.querySelector('.pf-arrow');
+  if (arrow) arrow.textContent = (hidden ? '▾ ' : '▸ ') + arrow.textContent.replace(/^[▸▾] /, '');
+}
 
 // ========== 实时刷新（东方财富API，原生CORS，免费安全） ==========
 const EM_INDICES = [
