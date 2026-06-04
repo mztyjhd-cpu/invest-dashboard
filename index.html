@@ -598,27 +598,53 @@ function liveRefresh() {
   const btn = document.getElementById('refreshBtn');
   btn.textContent = '⏳ 获取中...';
   btn.disabled = true;
+  document.getElementById('refreshNote').textContent = '正在获取...';
 
   const allIds = EM_INDICES.map(i => i.id).concat(Object.keys(EM_PORTFOLIO));
   const url = 'https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&fields=f2,f3,f4,f12,f14&secids=' + allIds.join(',');
 
+  function onFail() {
+    // Fallback: use allorigins CORS proxy with Sina API
+    const sinaCodes = ['sh000001','sz399001','sh000688','sz399006','sh000300','sh000905',
+      'hkHSI','int_nasdaq','int_sp500','int_dji','int_nikkei',
+      'sz159509','sh512880','sh513050','sh601939','sh601919','sz159938'];
+    const sinaUrl = 'https://hq.sinajs.cn/list=' + sinaCodes.join(',');
+    fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(sinaUrl))
+      .then(r => r.text())
+      .then(text => {
+        const map = {};
+        const re = /var hq_str_(\w+)="([^"]*)"/g;
+        let m;
+        while ((m = re.exec(text)) !== null) {
+          const d = m[2].split(',');
+          map[m[1]] = {f2:parseFloat(d[3])||parseFloat(d[1]), f3:parseFloat((parseFloat(d[3])-parseFloat(d[2]))/parseFloat(d[2])*100)||0};
+        }
+        updateIndicesLive(map);
+        updatePortfolioLive(map);
+        btn.textContent = '🔄 实时刷新行情';
+        btn.disabled = false;
+        document.getElementById('refreshNote').textContent = '✅ 实时(Sina) ' + new Date().toLocaleTimeString();
+      })
+      .catch(function() {
+        btn.textContent = '🔄 实时刷新行情';
+        btn.disabled = false;
+        document.getElementById('refreshNote').textContent = '⚠️ 网络不通，稍后再试';
+      });
+  }
+
   fetch(url)
-    .then(r => r.json())
-    .then(json => {
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
       if (!json.data || !json.data.diff) throw new Error('no data');
-      const map = {};
-      json.data.diff.forEach(d => { map[d.f12] = d; });
+      var map = {};
+      json.data.diff.forEach(function(d) { map[d.f12] = d; });
       updateIndicesLive(map);
       updatePortfolioLive(map);
       btn.textContent = '🔄 实时刷新行情';
       btn.disabled = false;
       document.getElementById('refreshNote').textContent = '✅ 实时 ' + new Date().toLocaleTimeString();
     })
-    .catch(err => {
-      btn.textContent = '🔄 实时刷新行情';
-      btn.disabled = false;
-      document.getElementById('refreshNote').textContent = '⚠️ 获取失败，稍后再试';
-    });
+    .catch(onFail);
 }
 
 function updateIndicesLive(map) {
