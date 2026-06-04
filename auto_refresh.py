@@ -45,8 +45,8 @@ def get_markets():
         print(f"Market fetch failed: {e}")
         return []
 
-def search_weibo(keyword, count=3):
-    """搜索微博（简化版，搜关键词+最近时间）"""
+def search_weibo(keyword, count=10):
+    """搜索微博，尽量多抓取"""
     # 使用新浪搜索API（有限制，但免费）
     results = []
     try:
@@ -63,12 +63,16 @@ def search_weibo(keyword, count=3):
     return results
 
 def classify_post(text, blogger):
-    """分类微博内容（山人/猫大几乎全是财经内容，极少量过滤）"""
+    """分类微博内容"""
     text_lower = text.lower()
-    # 只排除非常明显与投资无关的纯日常内容
-    pure_daily = ['发自拍','生日快乐','新年快乐','拜年','抽奖','红包','广告']
-    if any(w in text for w in pure_daily):
+    # 排除转发微博（以//@或转发微博开头）
+    if text.startswith('//@') or text.startswith('转发微博') or '回复@' in text[:20]:
         return None
+    # 山人：只排除女装、服装相关
+    if blogger == 'shanren':
+        if any(w in text for w in ['女装','服装']):
+            return None
+    # 猫大：几乎全是财经，不做额外过滤
     # 确定标签
     if any(w in text for w in ['纳指','纳科','溢价','打野','做踢','T+0','ETF','道琼斯','标普','QDII','美股','英伟达']):
         return '操作策略'
@@ -91,27 +95,23 @@ def update_live_posts(data):
     now = datetime.now()
     time_str = now.strftime('%m-%d %H:%M')
 
-    # 山人
-    posts = search_weibo('山人I ETF 纳指', 6)
+    # 山人：抓10条，过滤后保留最多6条
+    posts = search_weibo('山人I ETF 纳指', 10)
     finance_posts = []
     for p in posts:
         tag = classify_post(p, 'shanren')
-        if tag:
+        if tag and len(finance_posts) < 6:
             finance_posts.append({"time": time_str, "text": p[:200], "tag": tag})
-        if len(finance_posts) >= 3:
-            break
     if finance_posts:
         data['bloggers']['shanren']['live_posts'] = finance_posts
 
-    # 猫大
-    posts = search_weibo('让我赚点钱买个猫吧 A股', 6)
+    # 猫大：抓10条，保留全部
+    posts = search_weibo('让我赚点钱买个猫吧 A股', 10)
     finance_posts = []
     for p in posts:
         tag = classify_post(p, 'maoda')
-        if tag:
+        if tag and len(finance_posts) < 6:
             finance_posts.append({"time": time_str, "text": p[:200], "tag": tag})
-        if len(finance_posts) >= 3:
-            break
     if finance_posts:
         data['bloggers']['maoda']['live_posts'] = finance_posts
 
