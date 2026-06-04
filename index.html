@@ -402,7 +402,7 @@ function renderAll(data) {
     const b = data.bloggers[key];
     if (!b) return '';
     const dot = signalDot[signalMap[b.emoji]] || '⚪';
-    return `<div class="tab ${key}" onclick="switchTab('${key}')"><div><span class="emoji">${b.emoji}</span>${b.name}<span style="margin-left:6px;font-size:10px;">${dot}</span></div><div style="font-size:10px;color:var(--sub);">${b.tag}</div></div>`;
+    return `<div class="tab ${key}" onclick="switchTab('${key}')"><span style="font-size:12px;margin-right:4px;">${dot}</span>${b.name}</div>`;
   }).join('');
 
   // Panels
