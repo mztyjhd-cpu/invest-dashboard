@@ -252,11 +252,11 @@ function renderPortfolio(portfolio) {
       const id = 'pfg_' + i;
       return `
       <div class="pf-row pf-cat" style="font-weight:600;cursor:pointer;" onclick="t('${id}',this)">
-        <span class="pf-name pf-arrow">▾ ${g.cat.name}</span>
+        <span class="pf-name pf-arrow">▸ ${g.cat.name}</span>
         <span style="font-size:11px;min-width:50px;text-align:right;">${g.cat.amount||'--'}</span>
         <span class="pf-pnl ${cls}" style="min-width:50px;text-align:right;">${g.cat.pnl||'--'}</span>
       </div>
-      <div id="${id}" style="display:block;">
+      <div id="${id}" style="display:none;">
         ${g.subs.map(s => {
           const sd = (s.pnl||'').startsWith('-');
           const scls = sd ? 'pf-pnl-down' : 'pf-pnl-up';
