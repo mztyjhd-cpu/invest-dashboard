@@ -63,29 +63,27 @@ def search_weibo(keyword, count=3):
     return results
 
 def classify_post(text, blogger):
-    """分类微博内容（排除非财经内容）"""
+    """分类微博内容（山人/猫大几乎全是财经内容，极少量过滤）"""
     text_lower = text.lower()
-    # 山人：排除女装、喝茶、开店、日常
-    if blogger == 'shanren':
-        exclude = ['女装','喝茶','开店','吃饭','健身','旅游','猫','狗','天气']
-        if any(w in text for w in exclude):
-            return None
-    # 猫大：排除纯吐槽、日常
-    if blogger == 'maoda':
-        exclude = ['吃饭','喝酒','睡觉','旅游','搬家']
-        if any(w in text for w in exclude):
-            return None
+    # 只排除非常明显与投资无关的纯日常内容
+    pure_daily = ['发自拍','生日快乐','新年快乐','拜年','抽奖','红包','广告']
+    if any(w in text for w in pure_daily):
+        return None
     # 确定标签
-    if any(w in text for w in ['纳指','纳科','溢价','打野','做踢','T+0','ETF','道琼斯','标普']):
+    if any(w in text for w in ['纳指','纳科','溢价','打野','做踢','T+0','ETF','道琼斯','标普','QDII','美股','英伟达']):
         return '操作策略'
-    if any(w in text for w in ['半年线','梭哈','共振','反弹','支撑','底部','顶部']):
+    if any(w in text for w in ['半年线','梭哈','共振','反弹','支撑','底部','顶部','金针','金叉','死叉','MACD','RSI']):
         return '中期判断'
-    if any(w in text for w in ['仓位','封仓','滚动','加仓','减仓']):
+    if any(w in text for w in ['仓位','封仓','滚动','加仓','减仓','补仓','子弹','层','计划']):
         return '仓位管理'
-    if any(w in text for w in ['半导体','锂电','抱团','轮动','涨停','跌停','连板']):
+    if any(w in text for w in ['半导体','锂电','光伏','风电','军工','银行','消费','医疗','白酒','煤炭','抱团','轮动','涨停','跌停','连板','趋势','龙头']):
         return '板块分析'
-    if any(w in text for w in ['中枢','结构','背离','5分钟','30分钟','日线','周线']):
+    if any(w in text for w in ['中枢','结构','背驰','背离','5分钟','30分钟','日线','周线','头肩','突破','支撑位','压力位']):
         return '结构分析'
+    if any(w in text for w in ['效率','共识','预期','人声鼎沸','流动性','风偏']):
+        return '效率判断'
+    if any(w in text for w in ['A股','大盘','指数','个股','盘面','收盘','开盘','跳水','拉升','翻红','翻绿']):
+        return '市场观点'
     return '市场观点'
 
 def update_live_posts(data):
